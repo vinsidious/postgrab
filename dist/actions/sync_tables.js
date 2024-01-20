@@ -108,7 +108,7 @@ class SyncTables extends base_1.default {
             clearInterval(interval);
             return;
         }
-        const execString = `require('${path_1.default.join(__dirname, 'sync_tables.js')}').worker().then(process.exit)`;
+        const execString = `require('${path_1.default.join(__dirname, '../../dist/actions/index.js')}').worker().then(process.exit)`;
         const child = (0, child_process_1.spawn)(process.execPath, [`-e`, execString], {
             env: {
                 ...process.env,

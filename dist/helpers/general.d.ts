@@ -1,4 +1,3 @@
-/// <reference path="../../typings/pg-connection-string.d.ts" />
 /// <reference types="node" />
 /// <reference types="node" />
 import stream from 'stream';
@@ -15,7 +14,7 @@ export declare function extractColumnNamesFromSqlStatement(statement: string): s
 export declare function bufferToStream(buffer: Buffer | string): stream.Readable;
 export declare function sleep(ms?: number): Promise<unknown>;
 export declare function isEnvironmentVariable(str: string): boolean;
-export declare function parseConnectionString(connString: string): PgConnectionString.ConnectionParameters;
+export declare function parseConnectionString(connString: string): import("pg-connection-string").ConnectionOptions;
 export declare function encodeConnectionParameters(connParams: ConnectionParameters): string;
 export declare function isPgUri(connString: string): boolean;
 export declare class YAML {

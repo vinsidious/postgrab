@@ -32,7 +32,7 @@ const fs_1 = __importDefault(require("fs"));
 const js_yaml_1 = __importDefault(require("js-yaml"));
 const lodash_1 = __importDefault(require("lodash"));
 const pg_connection_string_1 = require("pg-connection-string");
-const pg_query_parser_1 = __importDefault(require("pg-query-parser"));
+const pgsql_ast_parser_1 = require("pgsql-ast-parser");
 const stream_1 = __importDefault(require("stream"));
 const defaults = __importStar(require("../defaults"));
 var exec_1 = require("./exec");
@@ -55,23 +55,28 @@ class Spinner {
 }
 exports.Spinner = Spinner;
 function prefixColumnNamesInWhereClause(whereClause, prefix) {
-    const SELECT_FROM_CLAUSE = `SELECT * FROM _ WHERE `;
-    const { query } = pg_query_parser_1.default.parse(SELECT_FROM_CLAUSE + whereClause);
-    const where = lodash_1.default.get(pg_query_parser_1.default.byType(query, `whereClause`), `0.whereClause`, []);
-    lodash_1.default.forEach(pg_query_parser_1.default.byType(where, `fields`), ({ fields }) => fields.unshift({ String: { str: prefix } }));
-    return pg_query_parser_1.default.deparse(query).replace(/SELECT \* FROM .* WHERE /i, ``);
+    const columnRegex = /(\b)(\w+)(\.\w+)?(?=\s*[=<>])/g;
+    return whereClause.replace(columnRegex, `$1${prefix}.$2`);
 }
 exports.prefixColumnNamesInWhereClause = prefixColumnNamesInWhereClause;
 function extractColumnNamesFromSqlStatement(statement) {
-    const { query } = pg_query_parser_1.default.parse(statement);
-    const { indexParams } = lodash_1.default.get(pg_query_parser_1.default.byType(query, `indexParams`), `0`, {});
-    const columnRefs = pg_query_parser_1.default.byType(indexParams, `ColumnRef`);
-    const columnRefCols = lodash_1.default.map(columnRefs, ({ ColumnRef: { fields } }) => {
-        return lodash_1.default.map(fields, `String.str`).join(`.`);
-    });
-    const names = pg_query_parser_1.default.byType(indexParams, `name`);
-    const nameCols = lodash_1.default.map(names, `name`);
-    return lodash_1.default.compact([...nameCols, ...columnRefCols]);
+    const ast = (0, pgsql_ast_parser_1.parse)(statement);
+    const columnNames = [];
+    const traverse = (node) => {
+        if (node.type === 'ref') {
+            columnNames.push(node.name);
+        }
+        else if (Array.isArray(node)) {
+            node.forEach(traverse);
+        }
+        else if (typeof node === 'object' && node !== null) {
+            Object.values(node).forEach(traverse);
+        }
+    };
+    if (ast[0]?.type === 'select') {
+        traverse(ast[0].columns);
+    }
+    return columnNames;
 }
 exports.extractColumnNamesFromSqlStatement = extractColumnNamesFromSqlStatement;
 function bufferToStream(buffer) {

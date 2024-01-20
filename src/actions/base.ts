@@ -64,7 +64,7 @@ export default abstract class PostgrabBaseClass {
      * Initiates (or re-initiates) the local or remote client pool.
      */
     createPool(source: DatabaseSource): void {
-        this.pool[source] = new Pool(parseConnectionString(this.config[source]))
+        this.pool[source] = new Pool(parseConnectionString(this.config[source]) as any)
         this.pool[source].on('error', (e) => {
             if (!/terminating connection/.test(e.message)) {
                 console.error(

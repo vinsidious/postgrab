@@ -2,8 +2,9 @@ import chalk from 'chalk'
 import fs from 'fs'
 import yaml from 'js-yaml'
 import _ from 'lodash'
-import { parse } from 'pg-connection-string'
-import pgQueryParser from 'pg-query-parser'
+import { parse as parseConnString } from 'pg-connection-string'
+import { parse } from 'pgsql-ast-parser'
+
 import stream from 'stream'
 
 import * as defaults from '../defaults'
@@ -38,25 +39,33 @@ export class Spinner {
 }
 
 export function prefixColumnNamesInWhereClause(whereClause: string, prefix: string): string {
-    const SELECT_FROM_CLAUSE = `SELECT * FROM _ WHERE `
-    const { query } = pgQueryParser.parse(SELECT_FROM_CLAUSE + whereClause)
-    const where = _.get(pgQueryParser.byType(query, `whereClause`), `0.whereClause`, [])
-    _.forEach(pgQueryParser.byType(where, `fields`), ({ fields }) =>
-        fields.unshift({ String: { str: prefix } }),
-    )
-    return pgQueryParser.deparse(query).replace(/SELECT \* FROM .* WHERE /i, ``)
+    // This regex is designed to match column names in the WHERE clause.
+    // It may need to be adjusted depending on the complexity of your SQL queries.
+    const columnRegex = /(\b)(\w+)(\.\w+)?(?=\s*[=<>])/g
+    return whereClause.replace(columnRegex, `$1${prefix}.$2`)
 }
 
 export function extractColumnNamesFromSqlStatement(statement: string): string[] {
-    const { query } = pgQueryParser.parse(statement)
-    const { indexParams } = _.get(pgQueryParser.byType(query, `indexParams`), `0`, {}) as any
-    const columnRefs = pgQueryParser.byType(indexParams, `ColumnRef`)
-    const columnRefCols = _.map(columnRefs, ({ ColumnRef: { fields } }) => {
-        return _.map(fields, `String.str`).join(`.`)
-    })
-    const names = pgQueryParser.byType(indexParams, `name`)
-    const nameCols = _.map(names, `name`) as string[]
-    return _.compact([...nameCols, ...columnRefCols])
+    const ast = parse(statement)
+    const columnNames = []
+
+    // Helper function to traverse AST nodes
+    const traverse = (node) => {
+        if (node.type === 'ref') {
+            columnNames.push(node.name)
+        } else if (Array.isArray(node)) {
+            node.forEach(traverse)
+        } else if (typeof node === 'object' && node !== null) {
+            Object.values(node).forEach(traverse)
+        }
+    }
+
+    // Start traversal from the top-level 'columns' property if it exists
+    if (ast[0]?.type === 'select') {
+        traverse(ast[0].columns)
+    }
+
+    return columnNames
 }
 
 export function bufferToStream(buffer: Buffer | string): stream.Readable {
@@ -80,8 +89,8 @@ export function isEnvironmentVariable(str: string): boolean {
  */
 
 export function parseConnectionString(connString: string) {
-    const params = parse(connString)
-    params.port = ~~params.port
+    const params = parseConnString(connString)
+    params.port = ~~params.port as any
     params.user = params.user || process.env.USER
     return params
 }

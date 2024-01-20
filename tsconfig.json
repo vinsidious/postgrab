@@ -14,8 +14,9 @@
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "removeComments": true,
+        "allowJs": true,
         "esModuleInterop": true,
     },
-    "include": ["src/**/*", "typings/**/*"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules", "!node_modules/@types", "**/*.test.ts"],
 }

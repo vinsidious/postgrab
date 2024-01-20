@@ -102,10 +102,7 @@ export default class SyncTables extends PostgrabBaseClass {
             return
         }
 
-        const execString = `require('${path.join(
-            __dirname,
-            'sync_tables.js',
-        )}').worker().then(process.exit)`
+        const execString = `require('${path.join(__dirname, '../../dist/actions/index.js')}').worker().then(process.exit)`
         const child = spawn(process.execPath, [`-e`, execString], {
             env: {
                 ...process.env,
