@@ -41,12 +41,6 @@ function getArgsFromCommander() {
         .option(`-t, --tables <tables>`, `A list of tables to sync`, maybeSplit, [])
         .option(`-g, --groups <groups>`, `A list of groups to sync`, maybeSplit, [])
         .option(
-            `-w, --watch`,
-            `Whether or not to continuously watch the target tables for new rows`,
-            () => true,
-            false,
-        )
-        .option(
             `-m, --max-workers <count>`,
             `Limit the number of parallel workers used to sync tables (defaults to number of cores)`,
         )
@@ -119,10 +113,6 @@ function getArgsFromCLI() {
         })
         .option('init', {
             alias: 'i',
-            type: 'boolean',
-        })
-        .option('watch', {
-            alias: 'w',
             type: 'boolean',
         })
         .option('truncate', {

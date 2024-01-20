@@ -35,7 +35,6 @@ export class App {
             `remote`,
             `tables`,
             `groups`,
-            `watch`,
             `exclude`,
             `partials`,
             `schema`,
@@ -52,9 +51,6 @@ export class App {
     /**
      * Does the work of merging the config values stores in the user's
      * '.postgrab.yaml' file with the CLI args passed in at runtime.
-     *
-     * @todo Add some basic validation so that we blow up on conflicting/mutually
-     * exclusive arguments (i.e. specifying both "tables" and "watch")
      */
     async mergeConfigFileWithUserArgs(configFile: any, userArgs: any): Promise<PostgrabConfig> {
         const [local, remote] = await Promise.all([
@@ -71,13 +67,10 @@ export class App {
 
         const setup = userArgs.setup || configFile.setup
         const maxWorkers = ~~(userArgs.maxWorkers || configFile.max_workers || defaults.MAX_WORKERS)
-        const watchIntervalSeconds =
-            configFile.watch_interval_seconds || defaults.WATCH_INTERVAL_SECONDS
         const schema = userArgs.schema || configFile.schema || defaults.SCHEMA_NAME
         const schemaOnly = !!userArgs.schemaOnly
         const metrics = !!userArgs.metrics
         const truncate = !!userArgs.truncate
-        const watch = !!userArgs.watch
         const init = !!userArgs.init
         const exclude = _.size(userArgs.exclude)
             ? userArgs.exclude
@@ -126,8 +119,6 @@ export class App {
             setup,
             tables,
             truncate,
-            watch,
-            watchIntervalSeconds,
             withStatements,
         }
     }

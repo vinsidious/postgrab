@@ -1,1 +1,1 @@
-export default function args(): any;
+export default function args(): any

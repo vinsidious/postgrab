@@ -199,8 +199,6 @@ export default class SyncTables extends PostgrabBaseClass {
 
     private async truncateLocalTargetTables() {
         try {
-            await this.pool.local.query('BEGIN')
-
             // Set client_min_messages to WARNING to silence NOTICE messages
             await this.pool.local.query('SET client_min_messages TO WARNING;')
 
@@ -211,10 +209,7 @@ export default class SyncTables extends PostgrabBaseClass {
 
             // Reset client_min_messages to default value (or you can set it to a specific level you want)
             await this.pool.local.query('SET client_min_messages TO DEFAULT;')
-
-            await this.pool.local.query('COMMIT')
         } catch (e) {
-            await this.pool.local.query('ROLLBACK')
             throw e
         }
     }

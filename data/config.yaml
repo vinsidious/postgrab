@@ -17,7 +17,7 @@
 local: postgres://localhost:5432/your_db_name
 
 remote:
-  user: $PGUSER
-  host: $PGHOST
-  database: some_db_name
-  password: $PGPASSWORD
+    user: $PGUSER
+    host: $PGHOST
+    database: some_db_name
+    password: $PGPASSWORD

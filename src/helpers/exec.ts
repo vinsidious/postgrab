@@ -1,15 +1,8 @@
-import {
-  ChildProcess,
-  spawn,
-  spawnSync,
-} from 'child_process';
-import _ from 'lodash';
-import shlex from 'shlex';
+import { ChildProcess, spawn, spawnSync } from 'child_process'
+import _ from 'lodash'
+import shlex from 'shlex'
 
-import {
-  Exec,
-  ExecOptions,
-} from '../interfaces';
+import { Exec, ExecOptions } from '../interfaces'
 
 const exec = <Exec>execAsync
 exec.sync = execSync

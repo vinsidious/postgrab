@@ -10,7 +10,6 @@ Postgrab is here to alleviate the burden of syncing your local and remote databa
 -   Partial table data
 -   Inject partials into other partials
 -   Merge or truncate data
--   Watch mode (continually fetches new rows)
 -   Sync schema only
 
 # Quick Start

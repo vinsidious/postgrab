@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import chalk from 'chalk'
 
-import { InteractiveConfig, PostgrabBaseClass, SyncSchema, SyncTables, Watch } from './actions'
+import { InteractiveConfig, PostgrabBaseClass, SyncSchema, SyncTables } from './actions'
 
 export default class Postgrab extends PostgrabBaseClass {
     async run() {
@@ -12,8 +12,6 @@ export default class Postgrab extends PostgrabBaseClass {
             actionInstance = new InteractiveConfig(this.config)
         } else if (this.config.schemaOnly) {
             actionInstance = new SyncSchema(this.config)
-        } else if (this.config.watch) {
-            actionInstance = new Watch(this.config)
         } else {
             actionInstance = new SyncTables(this.config)
         }

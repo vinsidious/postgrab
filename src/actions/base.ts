@@ -146,12 +146,13 @@ export default abstract class PostgrabBaseClass {
                     .then((rows) => _.get(rows, `0.column`, `id`))) as string
 
                 const columns = (await this.query.remote(`
-        SELECT column_name AS name,
-               data_type AS type,
-               CASE WHEN column_name = '${primaryKey}' THEN TRUE ELSE FALSE END AS "isPrimaryKey"
-          FROM information_schema.columns
-         WHERE table_schema = '${this.config.schema}'
-           AND table_name = '${table}'
+                    SELECT column_name AS name,
+                           data_type AS type,
+                           is_generated = 'ALWAYS' AS "isGenerated", -- This line is new
+                           CASE WHEN column_name = '${primaryKey}' THEN TRUE ELSE FALSE END AS "isPrimaryKey"
+                      FROM information_schema.columns
+                     WHERE table_schema = '${this.config.schema}'
+                       AND table_name = '${table}'
       `)) as ColumnMetadata[]
 
                 const uniqueIndices = (await this.query
@@ -267,61 +268,66 @@ export default abstract class PostgrabBaseClass {
         const remoteWhereClause = await this.getRemoteWhereClauseForTable(table)
         const SCHEMA_AND_TABLE = `"${this.config.schema}"."${table}"`
         const TEMP_TABLE = `temp_${table}`
-        const timeout = 600000 // 10 minutes.
 
-        const withStatement = this.config.withStatements[table]
+        // Construct a list of non-generated column names
+        const nonGeneratedColumns = tableData.columns
+            .filter((column) => !column.isGenerated)
+            .map((column) => `"${column.name}"`)
+            .join(', ')
 
+        // Use the list of non-generated columns in your SELECT statement
+        const selectColumns = nonGeneratedColumns || '*' // Fallback to '*' if the list is empty
         remoteCmd =
             remoteCmd ||
             `
-      BEGIN; SET statement_timeout TO ${timeout}; COMMIT;
-      COPY (${withStatement ? withStatement : ''}
-        SELECT * FROM ${SCHEMA_AND_TABLE}${remoteWhereClause ? ` ${remoteWhereClause}` : ``}
-      ) TO STDOUT`
+            COPY (SELECT ${selectColumns} FROM ${SCHEMA_AND_TABLE}${remoteWhereClause ? ` ${remoteWhereClause}` : ''})
+            TO STDOUT`
 
         // This is where we programmatically guard against every possible unique
         // constraint violation by generating a `WHERE` clause that will delete
         // any/all conflicting rows from the target table before copying their
         // updated version from the temporary table. If no unique indices exist,
         // we'll delete everything where all columns match
-        const uniqueWhereClause =
-            _.compact(
-                _.flatMap(tableData.uniqueIndices, ({ columns, whereClause }) => {
-                    const hasJSONColumnAccessors = _.find(columns, (column) =>
-                        // The '0.String.str' will be the path to the JSON/JSONB accessor
-                        // operator if it's being used in the index
-                        _.includes(JSON_COLUMN_ACCESSORS, _.get(column, '0.String.str')),
+        let uniqueWhereClauseParts = _.flatMap(
+            tableData.uniqueIndices,
+            ({ columns, whereClause }) => {
+                const hasJSONColumnAccessors = _.find(columns, (column) =>
+                    // The '0.String.str' will be the path to the JSON/JSONB accessor
+                    // operator if it's being used in the index
+                    _.includes(JSON_COLUMN_ACCESSORS, _.get(column, '0.String.str')),
+                )
+                // TODO: Add support for unique indices which utilize JSON/JSONB
+                // accessor operators
+                if (hasJSONColumnAccessors) return
+                const clauses = _.map(
+                    columns,
+                    (col) => col && `target_table."${col}" = temp_table."${col}"`,
+                )
+                if (whereClause) {
+                    clauses.push(
+                        ..._.map([`target_table`, `temp_table`], (prefix) => {
+                            return prefixColumnNamesInWhereClause(whereClause, prefix)
+                        }),
                     )
-                    // TODO: Add support for unique indices which utilize JSON/JSONB
-                    // accessor operators
-                    if (hasJSONColumnAccessors) return
-                    const clauses = _.map(
-                        columns,
-                        (col) => col && `target_table."${col}" = temp_table."${col}"`,
-                    )
-                    if (whereClause) {
-                        clauses.push(
-                            ..._.map([`target_table`, `temp_table`], (prefix) => {
-                                return prefixColumnNamesInWhereClause(whereClause, prefix)
-                            }),
-                        )
-                    }
-                    return clauses && `(${clauses.join(` AND `)})`
-                }),
-            ).join(` OR `) ||
-            // If there are no unique indices (should be a rare case because primary
-            // keys must be unique), just use the primary key as one even if it's our
-            // "guess" of which column is the primary key
-            `target_table.${tableData.primaryKey} = temp_table.${tableData.primaryKey}`
+                }
+                return clauses && `(${clauses.join(` AND `)})`
+            },
+        )
+
+        // Filter out any empty parts to avoid creating invalid SQL
+        uniqueWhereClauseParts = _.compact(uniqueWhereClauseParts)
+
+        // Use the list of non-generated columns in your INSERT statement
         const localCmd = `
-      BEGIN;
-      CREATE TEMPORARY TABLE ${TEMP_TABLE} AS SELECT * FROM ${SCHEMA_AND_TABLE} WITH NO DATA;
-      COPY ${TEMP_TABLE} FROM STDIN;
-      DELETE FROM ${SCHEMA_AND_TABLE} AS target_table USING ${TEMP_TABLE} AS temp_table WHERE ${uniqueWhereClause};
-      INSERT INTO ${SCHEMA_AND_TABLE} SELECT * FROM ${TEMP_TABLE};
-      DROP TABLE ${TEMP_TABLE};
-      COMMIT;
-    `
+            SET session_replication_role = 'replica';
+            SET client_min_messages TO WARNING;
+            CREATE TEMPORARY TABLE ${TEMP_TABLE} AS SELECT ${selectColumns} FROM ${SCHEMA_AND_TABLE} WITH NO DATA;
+            COPY ${TEMP_TABLE} (${nonGeneratedColumns}) FROM STDIN;
+            TRUNCATE ${SCHEMA_AND_TABLE} CASCADE;
+            INSERT INTO ${SCHEMA_AND_TABLE} (${nonGeneratedColumns}) SELECT ${nonGeneratedColumns} FROM ${TEMP_TABLE};
+            DROP TABLE ${TEMP_TABLE};
+            SET session_replication_role = DEFAULT;
+        `
 
         return this.streamingCopy(remoteCmd, localCmd)
     }

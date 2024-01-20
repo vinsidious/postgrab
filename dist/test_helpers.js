@@ -1,5 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
 class Generate {
     static configFile() {
         return {
@@ -30,15 +30,14 @@ class Generate {
             groups: {
                 group_1: ['table_1', 'table_2'],
             },
-            watch_interval_seconds: 5,
-        };
+        }
     }
     static userArgs() {
         return {
             groups: [],
             exclude: [],
             partials: null,
-        };
+        }
     }
 }
-exports.default = Generate;
+exports.default = Generate
