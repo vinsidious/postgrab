@@ -1,0 +1,21 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "target": "es2020",
+        "declaration": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "outDir": "./dist",
+        "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "noUnusedLocals": true,
+        "removeComments": true,
+        "esModuleInterop": true,
+    },
+    "include": ["src/**/*", "typings/**/*"],
+    "exclude": ["node_modules", "!node_modules/@types", "**/*.test.ts"],
+}

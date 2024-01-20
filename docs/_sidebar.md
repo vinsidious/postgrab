@@ -1,0 +1,9 @@
+- **Getting started**
+  - [Quick Start](quickstart.md)
+- **Configuration**
+  - [Config file](configuration/file.md)
+  - [CLI options](configuration/cli.md)
+- **Usage**
+  - [Syncing schema](usage/schema.md)
+  - [Syncing tables](usage/tables.md)
+  - [Watching tables](usage/watch.md)

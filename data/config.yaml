@@ -1,0 +1,23 @@
+# Local/remote database configuration
+# For each database, provide your connection parameters as either a connection
+# string/URI or as an object. Alternatively, you can provide a command that will
+# return the connection parameters so you can avoid hardcoding your secrets here.
+# You can also specify environment variables for any of the connection
+# parameters or for the connection string itself
+#
+# Examples:
+#   - command: vault read env/postgres/conn:string
+#   - connection string/URI: postgres://user:password@host:port/database
+#   - object:
+#       user: $PGUSER
+#       host: $PGHOST
+#       database: $PGDATABASE
+#       password: $PGPASSWORD
+
+local: postgres://localhost:5432/your_db_name
+
+remote:
+  user: $PGUSER
+  host: $PGHOST
+  database: some_db_name
+  password: $PGPASSWORD

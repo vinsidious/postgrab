@@ -1,0 +1,100 @@
+{
+    "name": "@vinsidious/postgrab",
+    "version": "1.2.1",
+    "description": "Prod -> Dev sync tool for Postgres",
+    "repository": "vinsidious/postgrab",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Vince Coppola",
+        "email": "void@dark.art"
+    },
+    "homepage": "https://github.com/vinsidious/postgrab",
+    "issues": "https://github.com/vinsidious/postgrab/issues",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "bin": {
+        "postgrab": "bin/postgrab"
+    },
+    "files": ["bin", "dist", "data", "*.md", "*.js"],
+    "pkg": {
+        "scripts": "dist/**/*.js"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "pnpm clean && tsc",
+        "watch": "pnpm build --watch",
+        "prepare": "pnpm build",
+        "test": "JEST_JUNIT_OUTPUT=./test-results/Unit/junit.xml jest --ci --reporters=jest-junit",
+        "release": "./scripts/release.sh"
+    },
+    "dependencies": {
+        "approximate-number": "^2.1.1",
+        "chalk": "^2.0.0",
+        "command-line-args": "^5.2.1",
+        "commander": "^11.1.0",
+        "config-yaml": "^1.1.6",
+        "draftlog": "^1.0.13",
+        "findup-sync": "^5.0.0",
+        "inquirer": "^8.2.6",
+        "jest-junit": "16.0.0",
+        "js-yaml": "^4.1.0",
+        "lodash": "^4.17.21",
+        "moment-timezone": "^0.5.44",
+        "ora": "^2.1.0",
+        "pg": "^8.11.3",
+        "pg-connection-string": "^2.6.2",
+        "pg-native": "^3.0.1",
+        "pg-query-parser": "^0.3.0",
+        "pluralize": "^8.0.0",
+        "relaxed-json": "^1.0.3",
+        "shlex": "^2.1.2",
+        "split2": "^4.2.0",
+        "yargs": "^17.7.2"
+    },
+    "devDependencies": {
+        "@types/jest": "29.5.11",
+        "@types/lodash": "^4.14.202",
+        "@types/node": "20.11.5",
+        "@types/pg": "^8.10.9",
+        "@types/yargs": "^17.0.32",
+        "docsify": "4.13.1",
+        "jest": "29.7.0",
+        "jest-cli": "29.7.0",
+        "prettier": "^3.2.4",
+        "replication": "0.0.7",
+        "rimraf": "5.0.5",
+        "ts-jest": "29.1.1",
+        "ts-node": "10.9.2",
+        "tslib": "2.6.2",
+        "tsx": "^4.7.0",
+        "typescript": "5.3.3"
+    },
+    "prettier": {
+        "printWidth": 100,
+        "singleQuote": true,
+        "trailingComma": "all",
+        "arrowParens": "always",
+        "endOfLine": "auto",
+        "tabWidth": 4,
+        "semi": false
+    },
+    "jest": {
+        "transform": {
+            "^.+\\.tsx?$": "ts-jest"
+        },
+        "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(tsx?|jsx?)$",
+        "moduleFileExtensions": ["ts", "tsx", "js", "json", "jsx"],
+        "collectCoverage": true,
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!src/**/*.test.ts",
+            "!src/test_helpers.ts",
+            "!src/**/index.ts",
+            "!src/defaults.ts",
+            "!src/constants.ts",
+            "!src/interfaces.ts"
+        ],
+        "coverageReporters": ["json", "lcov", "text"],
+        "coverageDirectory": "<rootDir>/cov"
+    }
+}

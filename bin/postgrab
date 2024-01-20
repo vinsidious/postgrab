@@ -1,0 +1,3 @@
+#!/usr/bin/env node --trace-warnings
+
+require('../dist/index.js');

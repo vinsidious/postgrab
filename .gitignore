@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+.postgrab.yaml
+/.readline_history
+**/*DS_Store
+/cov

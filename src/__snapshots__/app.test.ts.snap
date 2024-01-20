@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App convertPartialsIntoCTE creates 'WITH' statements for all tables that depend on the partials of other tables 1`] = `
+Object {
+  "table1": "",
+  "table2": "WITH table1 AS (SELECT * FROM \\"public\\".\\"table1\\" WHERE foo_bar = 'baz')",
+}
+`;
