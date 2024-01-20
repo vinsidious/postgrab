@@ -15,7 +15,13 @@
     "bin": {
         "postgrab": "bin/postgrab"
     },
-    "files": ["bin", "dist", "data", "*.md", "*.js"],
+    "files": [
+        "bin",
+        "dist",
+        "data",
+        "*.md",
+        "*.js"
+    ],
     "pkg": {
         "scripts": "dist/**/*.js"
     },
@@ -57,7 +63,6 @@
         "@types/node": "20.11.5",
         "@types/pg": "^8.10.9",
         "@types/yargs": "^17.0.32",
-        "docsify": "4.13.1",
         "jest": "29.7.0",
         "jest-cli": "29.7.0",
         "prettier": "^3.2.4",
@@ -83,7 +88,13 @@
             "^.+\\.tsx?$": "ts-jest"
         },
         "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(tsx?|jsx?)$",
-        "moduleFileExtensions": ["ts", "tsx", "js", "json", "jsx"],
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "json",
+            "jsx"
+        ],
         "collectCoverage": true,
         "collectCoverageFrom": [
             "src/**/*.ts",
@@ -94,7 +105,11 @@
             "!src/constants.ts",
             "!src/interfaces.ts"
         ],
-        "coverageReporters": ["json", "lcov", "text"],
+        "coverageReporters": [
+            "json",
+            "lcov",
+            "text"
+        ],
         "coverageDirectory": "<rootDir>/cov"
     }
 }
